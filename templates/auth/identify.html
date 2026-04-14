@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Verify Eligibility — UB eBallot{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <!-- Step indicator -->
+        <div class="steps">
+            <div class="step active">
+                <div class="step-num">1</div>
+                <span class="step-label">Identify</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <span class="step-label">Verify</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <span class="step-label">Vote</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <span class="step-label">Receipt</span>
+            </div>
+        </div>
+
+        <div class="auth-header" style="margin-bottom:1rem;">
+            <div class="auth-logo"><span>UB</span> eBallot</div>
+            <div class="auth-title">Enter Your Student Number</div>
+            <div class="auth-subtitle">{{ election.title }}</div>
+        </div>
+
+        <div class="alert alert-info" style="font-size:0.85rem;margin-bottom:1.25rem;">
+            Enter your student id. A 6-digit code will be sent to your UB
+            institutional email to confirm your identity before you vote.
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.identify', election_id=election.id) }}"
+              data-loading="true">
+            <div class="form-group">
+                <label class="form-label" for="student_number">UB Student Number</label>
+                <input type="text" class="form-control" id="student_number" name="student_number"
+                       placeholder="e.g. 202203607" required autocomplete="off"
+                       value="{{ request.form.get('student_number', '') }}"
+                       style="text-transform:uppercase;font-size:1.1rem;letter-spacing:0.05em;">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Send Verification Code</button>
+        </form>
+
+        <div style="margin-top:1rem;font-size:0.82rem;color:var(--gray-500);text-align:center;">
+            Your student number is used only to verify eligibility and deliver the code.
+        </div>
+    </div>
+</div>
+{% endblock %}

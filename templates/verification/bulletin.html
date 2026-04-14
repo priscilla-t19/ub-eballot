@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Bulletin Board — {{ election.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">Public Bulletin Board</div>
+    <div class="page-sub">{{ election.title }} — All ballot receipt hashes are publicly listed here</div>
+</div>
+
+<div class="card mb-2">
+    <div class="flex-between flex-wrap gap-1">
+        <div>
+            <div class="card-title">Chain Integrity</div>
+            <p style="font-size:0.85rem;color:var(--gray-500);">
+                Cryptographic verification that no ballots have been modified or deleted
+            </p>
+        </div>
+        {% if chain_intact %}
+            <span class="badge badge-success" style="font-size:0.9rem;padding:6px 14px;">&#10003; Chain Intact — No Tampering Detected</span>
+        {% else %}
+            <span class="badge badge-danger" style="font-size:0.9rem;padding:6px 14px;">Chain Broken — Possible Tampering</span>
+        {% endif %}
+    </div>
+    <div class="card-meta">{{ total }} ballot(s) recorded</div>
+</div>
+
+<div class="alert alert-info mb-2">
+    <span>This bulletin lists the <strong>hashed receipt codes</strong> of all ballots. Your actual receipt code can be verified against this list. Ballot contents remain encrypted.</span>
+</div>
+
+{% if ballots %}
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Receipt Hash (SHA-256)</th>
+                    <th>Chain Hash (prefix)</th>
+                    <th>Cast At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ballot in ballots %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><code style="font-size:0.75rem;">{{ ballot.receipt_hash[:32] }}…</code></td>
+                    <td><code style="font-size:0.75rem;">{{ ballot.chain_hash[:16] }}…</code></td>
+                    <td style="font-size:0.82rem;">{{ ballot.cast_at.strftime('%d %b %Y %H:%M:%S') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">No ballots have been cast in this election yet.</div>
+{% endif %}
+
+<div style="text-align:center;margin-top:1.5rem;">
+    <a href="{{ url_for('verification.verify') }}" class="btn btn-primary">Verify My Receipt Code</a>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <div class="page-title">Admin Dashboard</div>
+        <div class="page-sub">Manage elections, candidates, and voter registry</div>
+    </div>
+    <a href="{{ url_for('admin.new_election') }}" class="btn btn-primary">+ New Election</a>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">Quick Actions</h6>
+    </div>
+    <div class="card-body">
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{{ url_for('admin.database_view') }}" class="btn btn-outline-info">
+                <i class="fas fa-database"></i> Database View
+            </a>
+            <a href="{{ url_for('admin.manage_registry') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-users"></i> Student Registry
+            </a>
+            <a href="{{ url_for('admin.change_password') }}" class="btn btn-outline-warning">
+                <i class="fas fa-key"></i> Change Password
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ elections|length }}</div>
+        <div class="stat-label">Elections</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ registry_count }}</div>
+        <div class="stat-label">Eligible Students</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ votes_cast }}</div>
+        <div class="stat-label">Votes Cast</div>
+    </div>
+</div>
+
+<div class="page-header mt-2">
+    <div class="page-title" style="font-size:1.1rem;">Elections</div>
+</div>
+
+{% if elections %}
+{% for election in elections %}
+<div class="card" style="border-left:4px solid {% if election.is_active %}var(--success){% else %}var(--gray-300){% endif %};">
+    <div class="flex-between flex-wrap gap-1">
+        <div>
+            <div class="card-title">{{ election.title }}</div>
+            <div class="card-meta">
+                {{ election.start_time.strftime('%d %b %Y %H:%M') }} –
+                {{ election.end_time.strftime('%d %b %Y %H:%M') }}
+            </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+            {% if election.is_active %}
+                <span class="badge badge-success">Active</span>
+            {% else %}
+                <span class="badge badge-gray">Inactive</span>
+            {% endif %}
+            {% if election.results_published %}
+                <span class="badge badge-info">Results Published</span>
+            {% endif %}
+        </div>
+    </div>
+    <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
+        <a href="{{ url_for('admin.manage_election', election_id=election.id) }}" class="btn btn-primary btn-sm">Manage</a>
+        <form method="POST" action="{{ url_for('admin.toggle_election', election_id=election.id) }}" style="margin:0;">
+            <button type="submit" class="btn btn-sm {% if election.is_active %}btn-danger{% else %}btn-success{% endif %}">
+                {% if election.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+        </form>
+        {% if not election.results_published %}
+        <form method="POST" action="{{ url_for('admin.publish_results', election_id=election.id) }}" style="margin:0;">
+            <button type="submit" class="btn btn-gold btn-sm">Publish Results</button>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('voting.results', election_id=election.id) }}" class="btn btn-outline btn-sm">View Results</a>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-info">No elections created yet. <a href="{{ url_for('admin.new_election') }}">Create one.</a></div>
+{% endif %}
+{% endblock %}

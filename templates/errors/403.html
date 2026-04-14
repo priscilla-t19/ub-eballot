@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}403 - Forbidden{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Access Forbidden</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-1 text-danger">403</h1>
+                    <h3 class="card-title">Forbidden</h3>
+                    <p class="card-text">
+                        You don't have permission to access this resource.
+                        This incident has been logged for security purposes.
+                    </p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Go Home
+                        </a>
+                        {% if session.get('admin_logged_in') %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

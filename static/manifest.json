@@ -1,0 +1,64 @@
+{
+  "name": "UB eBallot - Secure Online Voting",
+  "short_name": "UB eBallot",
+  "description": "University of Botswana SRC Elections - Secure, Anonymous, Verifiable Online Voting System",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#003087",
+  "theme_color": "#003087",
+  "categories": ["education", "government", "productivity"],
+  "lang": "en-GB",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Verify Vote",
+      "short_name": "Verify",
+      "description": "Verify your vote anonymously",
+      "url": "/verify",
+      "icons": [{ "src": "/static/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Election Results",
+      "short_name": "Results",
+      "description": "View election results",
+      "url": "/results",
+      "icons": [{ "src": "/static/icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ]
+}

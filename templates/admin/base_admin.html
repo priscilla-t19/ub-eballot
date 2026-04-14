@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin{% endblock %} — UB eBallot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="{{ url_for('admin.dashboard') }}" class="nav-brand">
+            <span class="brand-ub">UB</span>
+            <span class="brand-eballot">eBallot Admin</span>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('admin.dashboard') }}" style="color:rgba(255,255,255,0.85);">Dashboard</a>
+            <a href="{{ url_for('admin.database_view') }}" style="color:rgba(255,255,255,0.85);">Database</a>
+            <a href="{{ url_for('admin.manage_registry') }}" style="color:rgba(255,255,255,0.85);">Registry</a>
+            <a href="{{ url_for('admin.change_password') }}" style="color:rgba(255,255,255,0.85);">Password</a>
+            <a href="{{ url_for('main.index') }}" style="color:rgba(255,255,255,0.7);font-size:0.8rem;">← Site</a>
+            <a href="{{ url_for('admin.admin_logout') }}" class="btn-outline-sm">Logout</a>
+        </div>
+    </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">
+                    <span>{{ message }}</span>
+                    <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <div>UB eBallot Admin Panel, Logged in as <strong>{{ session.get('admin_username', 'Admin') }}</strong></div>
+</footer>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

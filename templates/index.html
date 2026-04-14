@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}UB eBallot — Home{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ───────────────────────────────── -->
+<div class="hero">
+    <div style="font-size:0.8rem;font-weight:600;letter-spacing:2px;opacity:0.7;text-transform:uppercase;margin-bottom:0.5rem;">
+        University of Botswana
+    </div>
+    <div class="hero-title"><span>UB</span> eBallot</div>
+    <p class="hero-subtitle">
+        The official online voting platform for UB SRC Elections.
+        Secure, anonymous, and verifiable.
+    </p>
+    <div class="hero-actions">
+        {% if elections %}
+            <a href="#elections" class="btn btn-gold">Vote Now</a>
+        {% endif %}
+        <a href="{{ url_for('verification.verify') }}" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.6);">
+            Verify My Vote
+        </a>
+    </div>
+</div>
+
+<!-- ── How to Vote ─────────────────────────── -->
+<div style="margin-bottom:2.5rem;">
+    <div class="page-header" style="text-align:center;margin-bottom:1.5rem;">
+        <div class="page-title">How to Vote</div>
+        <div class="page-sub">Four simple steps to cast your ballot</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1rem;">
+
+        <div class="card" style="text-align:center;padding:1.75rem 1.25rem;border-top:4px solid var(--ub-blue);">
+            <div style="width:44px;height:44px;background:var(--ub-blue);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;margin:0 auto 1rem;">1</div>
+            <div class="card-title" style="margin-bottom:0.4rem;">Find the Election</div>
+            <p style="font-size:0.85rem;color:var(--gray-500);">
+                Scroll down to Active Elections and click <strong>Vote Now</strong> on the election you want to participate in.
+            </p>
+        </div>
+
+        <div class="card" style="text-align:center;padding:1.75rem 1.25rem;border-top:4px solid var(--ub-gold);">
+            <div style="width:44px;height:44px;background:var(--ub-gold);color:var(--ub-blue-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;margin:0 auto 1rem;">2</div>
+            <div class="card-title" style="margin-bottom:0.4rem;">Enter Your Student ID</div>
+            <p style="font-size:0.85rem;color:var(--gray-500);">
+                Type in your UB student number. You must be a registered UB student to be eligible to vote.
+            </p>
+        </div>
+
+        <div class="card" style="text-align:center;padding:1.75rem 1.25rem;border-top:4px solid var(--success);">
+            <div style="width:44px;height:44px;background:var(--success);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;margin:0 auto 1rem;">3</div>
+            <div class="card-title" style="margin-bottom:0.4rem;">Verify via Email</div>
+            <p style="font-size:0.85rem;color:var(--gray-500);">
+                A 6-digit code is sent to your registered email. Enter it to confirm it's really you voting.
+            </p>
+        </div>
+
+        <div class="card" style="text-align:center;padding:1.75rem 1.25rem;border-top:4px solid var(--info);">
+            <div style="width:44px;height:44px;background:var(--info);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;margin:0 auto 1rem;">4</div>
+            <div class="card-title" style="margin-bottom:0.4rem;">Cast & Get Receipt</div>
+            <p style="font-size:0.85rem;color:var(--gray-500);">
+                Select your candidates and submit. You'll receive a receipt code to verify your vote was counted.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Active Elections ────────────────────── -->
+<div id="elections" style="margin-bottom:2.5rem;">
+    <div class="page-header">
+        <div class="page-title">Active Elections</div>
+        <div class="page-sub">
+            {% if elections %}
+                {{ elections|length }} election{{ 's' if elections|length != 1 }} currently open — your student ID is all you need
+            {% else %}
+                No elections are currently open
+            {% endif %}
+        </div>
+    </div>
+
+    {% if elections %}
+        <div class="election-grid">
+            {% for election in elections %}
+            <div class="election-card">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
+                    <div class="election-card-title">{{ election.title }}</div>
+                    {% if election.is_open %}
+                        <span class="election-status status-open"><span class="status-dot"></span> Open</span>
+                    {% else %}
+                        <span class="election-status status-upcoming"><span class="status-dot"></span> Upcoming</span>
+                    {% endif %}
+                </div>
+
+                {% if election.description %}
+                    <p style="font-size:0.82rem;color:var(--gray-500);margin-top:0.2rem;">{{ election.description }}</p>
+                {% endif %}
+
+                <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:var(--gray-500);margin-top:0.25rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {{ election.start_time.strftime('%d %b %Y %H:%M') }} – {{ election.end_time.strftime('%d %b %Y %H:%M') }}
+                </div>
+
+                {% if election.is_open %}
+                <div class="election-timer">
+                    <span class="election-timer-dot"></span>
+                    Closes in <span class="election-countdown" data-end="{{ election.end_time.strftime('%Y-%m-%dT%H:%M:%S') }}">&nbsp;</span>
+                </div>
+                {% endif %}
+
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;">
+                    {% if election.is_open %}
+                        <a href="{{ url_for('auth.identify', election_id=election.id) }}" class="btn btn-primary btn-sm">
+                            Vote Now →
+                        </a>
+                    {% endif %}
+                    {% if election.results_published %}
+                        <a href="{{ url_for('voting.results', election_id=election.id) }}" class="btn btn-outline btn-sm">
+                            View Results
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            No elections are currently active. Check back when an SRC election is announced.
+        </div>
+    {% endif %}
+</div>
+
+<!-- ── Verify My Vote ─────────────────────── -->
+<div style="background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;margin-bottom:2rem;border-left:5px solid var(--ub-gold);">
+    <div>
+        <div style="font-size:1rem;font-weight:700;color:var(--ub-blue);margin-bottom:0.3rem;">Already voted? Verify your ballot.</div>
+        <p style="font-size:0.875rem;color:var(--gray-500);max-width:480px;">
+            Use the receipt code you received after voting to confirm your ballot is included in the final count.
+            This does not reveal who you voted for.
+        </p>
+    </div>
+    <a href="{{ url_for('verification.verify') }}" class="btn btn-gold" style="flex-shrink:0;">
+        Verify My Vote
+    </a>
+</div>
+
+<!-- PWA Install Banner -->
+<div id="pwa-banner">
+    <span>Install UB eBallot for quick access on your phone</span>
+    <div style="display:flex;gap:0.5rem;flex-shrink:0;">
+        <button id="pwaInstallBtn" class="btn btn-gold btn-sm">Install</button>
+        <button id="pwaDismissBtn" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;">Later</button>
+    </div>
+</div>
+
+{% endblock %}

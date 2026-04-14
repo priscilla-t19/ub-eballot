@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Enter Voting Code — UB eBallot{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <!-- Step indicator -->
+        <div class="steps">
+            <div class="step completed">
+                <div class="step-num">✓</div>
+                <span class="step-label">Identify</span>
+            </div>
+            <div class="step-connector done"></div>
+            <div class="step active">
+                <div class="step-num">2</div>
+                <span class="step-label">Verify</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <span class="step-label">Vote</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <span class="step-label">Receipt</span>
+            </div>
+        </div>
+
+        <div class="auth-header" style="margin-bottom:1rem;">
+            <div class="auth-logo"><span>UB</span> eBallot</div>
+            <div class="auth-title">Enter Your Voting Code</div>
+            <div class="auth-subtitle">{{ election.title }}</div>
+        </div>
+
+        <div class="alert alert-info" style="font-size:0.85rem;margin-bottom:1rem;">
+            A 6-digit code was sent to your UB institutional email. Enter it below to proceed.
+        </div>
+
+        <!-- Live countdown -->
+        <div class="otp-countdown">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Code expires in
+            <span class="countdown-time"
+                  id="otp-countdown-time"
+                  data-seconds="{{ config.OTP_EXPIRY|default(600) }}"
+                  data-redirect="{{ url_for('auth.identify', election_id=election.id) }}">10:00</span>
+        </div>
+
+        <!-- 6 digit boxes -->
+        <form method="POST" action="{{ url_for('auth.verify_otp', election_id=election.id) }}"
+              id="otpForm">
+            <div class="otp-inputs">
+                <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code">
+                <input class="otp-digit" type="text" inputmode="numeric" maxlength="1">
+                <input class="otp-digit" type="text" inputmode="numeric" maxlength="1">
+                <input class="otp-digit" type="text" inputmode="numeric" maxlength="1">
+                <input class="otp-digit" type="text" inputmode="numeric" maxlength="1">
+                <input class="otp-digit" type="text" inputmode="numeric" maxlength="1">
+            </div>
+            <!-- Hidden field assembled by JS -->
+            <input type="hidden" name="otp_code" id="otp_hidden">
+
+            <button type="submit" class="btn btn-primary btn-full" id="otpSubmit" disabled>
+                Verify &amp; Proceed to Vote
+            </button>
+        </form>
+
+        <div style="margin-top:1.25rem;text-align:center;font-size:0.85rem;color:var(--gray-500);">
+            Didn't receive the code?
+            <a href="{{ url_for('auth.identify', election_id=election.id) }}"
+               style="color:var(--ub-blue);font-weight:600;">Go back and resend</a>
+        </div>
+        <div style="margin-top:0.6rem;font-size:0.78rem;color:var(--gray-400);text-align:center;">
+            If you did not request this code, someone may have your student number.
+        </div>
+    </div>
+</div>
+
+<script>
+// Enable submit only when all 6 digits filled
+const submitBtn = document.getElementById('otpSubmit');
+const hiddenField = document.getElementById('otp_hidden');
+document.querySelectorAll('.otp-digit').forEach(input => {
+    input.addEventListener('input', () => {
+        const code = Array.from(document.querySelectorAll('.otp-digit')).map(i => i.value).join('');
+        submitBtn.disabled = code.length < 6;
+    });
+});
+
+// Show loading spinner on submit
+document.getElementById('otpForm').addEventListener('submit', function() {
+    if (!submitBtn.disabled) submitBtn.classList.add('btn-loading');
+});
+</script>
+{% endblock %}

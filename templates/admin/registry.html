@@ -1,0 +1,131 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Student Registry{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">UB Student Registry</div>
+    <div class="page-sub">
+    </div>
+</div>
+
+<!-- CSV Import -->
+<div class="card mb-2">
+    <div class="card-title">Import / Update from CSV</div>
+    <div class="alert alert-info mb-2" style="font-size:0.85rem;">
+    
+    </div>
+    <form method="POST" action="{{ url_for('admin.manage_registry') }}" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="import_csv">
+        <div style="display:flex;gap:0.75rem;align-items:flex-end;">
+            <div class="form-group" style="margin:0;flex:1;">
+                <label class="form-label">CSV File</label>
+                <input type="file" class="form-control" name="registry_file" accept=".csv" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Import</button>
+        </div>
+    </form>
+</div>
+
+<!-- Manual Entry -->
+<div class="card mb-2">
+    <div class="card-title">Add / Reactivate Individual Entry</div>
+    <form method="POST" action="{{ url_for('admin.manage_registry') }}">
+        <input type="hidden" name="action" value="add_entry">
+        <div style="display:grid;grid-template-columns:1fr 2fr 2fr 2fr auto;gap:0.75rem;align-items:flex-end;">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Student Number</label>
+                <input type="text" class="form-control" name="student_number"
+                       placeholder="e.g. 202203607" required style="text-transform:uppercase;">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" name="full_name"
+                       placeholder="Full name" required>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Institutional Email</label>
+                <input type="email" class="form-control" name="ub_email"
+                       placeholder="student@ub.ac.bw">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Programme (optional)</label>
+                <input type="text" class="form-control" name="programme"
+                       placeholder="e.g. BSc Computer Science">
+            </div>
+            <button type="submit" class="btn btn-success" style="white-space:nowrap;">Add Entry</button>
+        </div>
+    </form>
+</div>
+
+<!-- Registry Table -->
+<div class="card">
+    <div class="card-title flex-between">
+        <span>Registry Entries ({{ registry|length }} total)</span>
+        <span style="font-size:0.82rem;color:var(--gray-500);">
+            {{ registry|selectattr('is_active')|list|length }} active
+        </span>
+    </div>
+    {% if registry %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Programme</th>
+                    <th>Year</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in registry[:200] %}
+                <tr>
+                    <td>{{ entry.student_number }}</td>
+                    <td>{{ entry.full_name }}</td>
+                    <td style="font-size:0.82rem;">
+                        {% if entry.ub_email %}
+                            {{ entry.ub_email }}
+                        {% else %}
+                            <span class="badge badge-warning">No email</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:0.82rem;color:var(--gray-500);">{{ entry.programme or '—' }}</td>
+                    <td>{{ entry.year_of_study or '—' }}</td>
+                    <td>
+                        {% if entry.is_active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-gray">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if entry.is_active %}
+                        <form method="POST"
+                              action="{{ url_for('admin.deactivate_registry_entry', entry_id=entry.id) }}"
+                              style="margin:0;"
+                              onsubmit="return confirm('Deactivate {{ entry.student_number }}? They will not be able to vote.');">
+                            <button type="submit" class="btn btn-sm btn-danger">Deactivate</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if registry|length > 200 %}
+                <tr>
+                    <td colspan="6" style="text-align:center;color:var(--gray-500);font-size:0.85rem;">
+                        Showing first 200 of {{ registry|length }} entries
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        No registry entries. Import a CSV file or add individual entries above.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

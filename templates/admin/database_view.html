@@ -1,0 +1,266 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Database Overview — UB eBallot Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-database"></i> Database Overview</h1>
+        <p class="text-muted">Secure system statistics without exposing sensitive data</p>
+    </div>
+
+    <!-- System Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-vote-yea"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_ballots }}</h3>
+                <p>Total Ballots Cast</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_students }}</h3>
+                <p>Registered Students</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_voters }}</h3>
+                <p>Verified Voters</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_elections }}</h3>
+                <p>Total Elections</p>
+                <small class="text-success">{{ active_elections }} active</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock"></i> Recent Activity (24h)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="activity-item">
+                        <span class="activity-icon">
+                            <i class="fas fa-vote-yea text-primary"></i>
+                        </span>
+                        <div class="activity-content">
+                            <strong>{{ recent_ballots }}</strong> ballots cast
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">
+                            <i class="fas fa-sign-in-alt text-success"></i>
+                        </span>
+                        <div class="activity-content">
+                            <strong>{{ recent_logins }}</strong> admin logins
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-shield-alt"></i> Security Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="activity-item">
+                        <span class="activity-icon">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                        </span>
+                        <div class="activity-content">
+                            <strong>{{ failed_attempts }}</strong> failed login attempts
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">
+                            <i class="fas fa-search text-info"></i>
+                        </span>
+                        <div class="activity-content">
+                            <strong>{{ suspicious_requests }}</strong> suspicious requests flagged
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </span>
+                        <div class="activity-content">
+                            <strong>{{ published_results }}</strong> elections with published results
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Privacy Notice -->
+    <div class="card mt-4 border-info">
+        <div class="card-body">
+            <h6 class="card-title text-info">
+                <i class="fas fa-info-circle"></i> Data Privacy & Security
+            </h6>
+            <ul class="mb-0 small">
+                <li>Student IDs and personal information are never displayed</li>
+                <li>All voting data is encrypted and anonymized</li>
+                <li>Ballot integrity is cryptographically verified</li>
+                <li>All admin actions are logged for audit purposes</li>
+                <li>System uses end-to-end encryption for ballot storage</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('admin.manage_registry') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-users"></i> Student Registry
+                        </a>
+                        <a href="{{ url_for('admin.change_password') }}" class="btn btn-outline-info">
+                            <i class="fas fa-key"></i> Change Password
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-shield"></i> Privacy Checks</h5>
+                </div>
+                <div class="card-body">
+                    {% for check in privacy_checks %}
+                    <div class="activity-item">
+                        <div class="activity-content">
+                            <strong>{{ check.label }}</strong>
+                            <div class="small text-muted">{{ check.status }}: {{ check.detail }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clipboard-list"></i> Recent Audit Events</h5>
+                </div>
+                <div class="card-body">
+                    {% for entry in recent_audit %}
+                    <div class="activity-item">
+                        <div class="activity-content">
+                            <strong>{{ entry.event_type }}</strong>
+                            <div class="small text-muted">{{ entry.description }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-muted small">No audit events recorded yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.stat-content p {
+    margin: 0.25rem 0 0 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 35px;
+    text-align: center;
+}
+
+.activity-content {
+    flex: 1;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

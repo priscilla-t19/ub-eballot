@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Cast Your Vote  UB eBallot{% endblock %}
+
+{% block content %}
+<div class="ballot-header">
+    <h1>{{ election.title }}</h1>
+    <p>{{ election.end_time.strftime('Voting closes: %d %b %Y at %H:%M') }}</p>
+    <div style="margin-top:0.75rem;">
+        <span class="security-badge" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:white;">
+            Anonymous Session  Your identity is not accessible here
+        </span>
+    </div>
+</div>
+
+<!-- Warning shown if not all positions selected -->
+<div id="ballot-warning" class="alert alert-danger mb-2" style="display:none;">
+    Please select a candidate for every position before submitting your ballot.
+</div>
+
+<div class="alert alert-info mb-2">
+    <span>Select one candidate per position. Your ballot will be <strong>encrypted</strong> before storage. You will receive a <strong>receipt code</strong> to verify your vote was counted.</span>
+</div>
+
+<form id="ballotForm" method="POST" action="{{ url_for('voting.cast_vote', election_id=election.id) }}">
+    {% for position in positions %}
+    <div class="position-section" data-position="{{ position.id }}">
+        <div class="position-title">{{ loop.index }}. {{ position.title }}</div>
+        {% if position.description %}
+            <p style="font-size:0.82rem;color:var(--gray-500);margin-bottom:0.85rem;">{{ position.description }}</p>
+        {% endif %}
+        <div class="candidate-list">
+            {% for candidate in position.candidates %}
+            <label class="candidate-option">
+                <input type="radio" name="position_{{ position.id }}" value="{{ candidate.id }}" required>
+                <div class="candidate-info">
+                    <div class="candidate-name">{{ candidate.full_name }}</div>
+                    {% if candidate.party %}
+                        <div class="candidate-party">{{ candidate.party }}</div>
+                    {% endif %}
+                    <div class="candidate-sn">{{ candidate.student_number }}</div>
+                    {% if candidate.manifesto %}
+                        <div class="candidate-manifesto">{{ candidate.manifesto[:150] }}{% if candidate.manifesto|length > 150 %}…{% endif %}</div>
+                    {% endif %}
+                </div>
+            </label>
+            {% else %}
+            <div class="alert alert-warning" style="margin:0;">No candidates registered for this position.</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if positions %}
+    <div class="card" style="text-align:center;border-top:3px solid var(--ub-blue);">
+        <p style="font-size:0.875rem;color:var(--gray-500);margin-bottom:1rem;">
+            By submitting, you confirm that these are your final choices.<br>
+            <strong>This action cannot be undone.</strong>
+        </p>
+        <button type="submit" class="btn btn-primary btn-lg">
+            Submit My Ballot
+        </button>
+        <div style="margin-top:0.75rem;">
+            <span class="security-badge">Ballot will be encrypted on submission</span>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">No positions have been set up for this election yet.</div>
+    {% endif %}
+</form>
+{% endblock %}

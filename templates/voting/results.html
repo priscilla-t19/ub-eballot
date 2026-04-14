@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Results — {{ election.title }} — UB eBallot{% endblock %}
+
+{% block content %}
+<div class="ballot-header">
+    <h1>{{ election.title }}</h1>
+    <p>Official Election Results</p>
+</div>
+
+<div class="stats-grid mb-2">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_votes }}</div>
+        <div class="stat-label">Total Ballots Cast</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ positions|length }}</div>
+        <div class="stat-label">Positions Contested</div>
+    </div>
+</div>
+
+{% for position in positions %}
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">{{ position.title }}</div>
+
+    {% set pos_tallies = tallies.get(position.id, {}) %}
+    {% set pos_total = pos_tallies.values()|sum %}
+    {% set max_votes = pos_tallies.values()|max if pos_tallies else 0 %}
+
+    {% if pos_tallies %}
+        {% for candidate in position.candidates | sort(attribute='id') %}
+            {% set votes = pos_tallies.get(candidate.id, 0) %}
+            {% set pct = ((votes / pos_total) * 100)|round(1) if pos_total > 0 else 0 %}
+            {% set is_leader = (votes == max_votes and votes > 0) %}
+
+            <div class="result-item">
+                <div class="result-label">
+                    <span>
+                        {{ candidate.full_name }}
+                        {% if is_leader %}<span class="badge badge-success" style="margin-left:0.5rem;">Leading</span>{% endif %}
+                    </span>
+                    <span>{{ votes }} vote{{ 's' if votes != 1 else '' }} ({{ pct }}%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill {% if is_leader %}leading{% endif %}" style="width:{{ pct }}%"></div>
+                </div>
+            </div>
+        {% endfor %}
+        <div class="card-meta">{{ pos_total }} total votes for this position</div>
+    {% else %}
+        <p style="color:var(--gray-500);font-size:0.875rem;">No votes recorded for this position.</p>
+    {% endif %}
+</div>
+{% endfor %}
+
+<div style="text-align:center;margin-top:1.5rem;">
+    <a href="{{ url_for('verification.bulletin_board', election_id=election.id) }}" class="btn btn-outline">
+        View Public Ballot Bulletin
+    </a>
+    &nbsp;
+    <a href="{{ url_for('verification.verify') }}" class="btn btn-outline">
+        Verify My Vote
+    </a>
+</div>
+{% endblock %}

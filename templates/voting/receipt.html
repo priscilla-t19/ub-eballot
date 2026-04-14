@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Vote Receipt — UB eBallot{% endblock %}
+
+{% block content %}
+<div class="receipt-card">
+    <div class="receipt-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+</div>
+    <h2 style="color:var(--success);font-size:1.3rem;">Vote Cast Successfully!</h2>
+    <p style="color:var(--gray-500);font-size:0.875rem;margin-top:0.5rem;">
+        Your encrypted ballot has been recorded in the tamper-evident ledger.
+    </p>
+
+    <div style="margin:1.5rem 0;">
+        <div style="font-size:0.8rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;">
+            Your Receipt Code
+        </div>
+        <div class="receipt-code-box" id="receiptCode">{{ receipt_code }}</div>
+        <button id="copyReceiptBtn" class="btn btn-outline btn-sm" style="margin-top:0.5rem;">
+            Copy Code
+        </button>
+    </div>
+
+    <div class="alert alert-warning" style="text-align:left;">
+        <div>
+            <strong>Save this code!</strong> It is displayed only once.
+            You can use it at any time to verify your vote was included in the final count.
+            This code does NOT reveal who you voted for.
+        </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem;">
+        <a href="{{ url_for('verification.verify') }}" class="btn btn-primary">
+            Verify My Vote Now
+        </a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline">
+            Return to Home
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Edit Position{% endblock %}
+
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <div class="page-title">Edit Position</div>
+        <div class="page-sub">{{ position.title }}</div>
+    </div>
+    <a href="{{ url_for('admin.manage_election', election_id=position.election_id) }}" class="btn btn-outline btn-sm">← Back</a>
+</div>
+
+<div class="card" style="max-width:540px;">
+    <form method="POST">
+        <div class="form-group">
+            <label class="form-label">Position Title</label>
+            <input type="text" class="form-control" name="title"
+                   value="{{ position.title }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description (optional)</label>
+            <input type="text" class="form-control" name="description"
+                   value="{{ position.description or '' }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

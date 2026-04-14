@@ -1,0 +1,158 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Manage Election{% endblock %}
+
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <div class="page-title">{{ election.title }}</div>
+        <div class="page-sub">Election Management</div>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">← Back</a>
+</div>
+
+<div class="card mb-2">
+    <div class="flex-between flex-wrap gap-1">
+        <div>
+            <div style="font-size:0.85rem;color:var(--gray-500);">
+                {{ election.start_time.strftime('%d %b %Y %H:%M') }} –
+                {{ election.end_time.strftime('%d %b %Y %H:%M') }}
+            </div>
+            <div style="margin-top:0.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <span class="badge {% if election.is_active %}badge-success{% else %}badge-gray{% endif %}">
+                    {% if election.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+                <span class="badge badge-info">{{ ballot_count }} ballot(s)</span>
+                {% if chain_ok is not none %}
+                    <span class="badge {% if chain_ok %}badge-success{% else %}badge-danger{% endif %}">
+                        {% if chain_ok %}Chain OK{% else %}Chain Broken!{% endif %}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <form method="POST" action="{{ url_for('admin.toggle_election', election_id=election.id) }}" style="margin:0;">
+                <button type="submit" class="btn btn-sm {% if election.is_active %}btn-danger{% else %}btn-success{% endif %}">
+                    {% if election.is_active %}Deactivate{% else %}Activate{% endif %}
+                </button>
+            </form>
+            {% if not election.results_published %}
+            <form method="POST" action="{{ url_for('admin.publish_results', election_id=election.id) }}" style="margin:0;">
+                <button type="submit" class="btn btn-gold btn-sm">Publish Results</button>
+            </form>
+            {% else %}
+            <form method="POST" action="{{ url_for('admin.unpublish_results', election_id=election.id) }}" style="margin:0;"
+                  onsubmit="return confirm('Unpublish results? Students will no longer be able to view them.');">
+                <button type="submit" class="btn btn-sm btn-outline" style="border-color:var(--warning);color:var(--warning);">Unpublish Results</button>
+            </form>
+            {% endif %}
+            {% if not election.is_active %}
+            <form method="POST" action="{{ url_for('admin.delete_election', election_id=election.id) }}" style="margin:0;"
+                  onsubmit="return confirm('Permanently delete this election and all its ballots?');">
+                <button type="submit" class="btn btn-sm btn-danger">Delete Election</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Position -->
+<div class="card mb-2">
+    <div class="card-title">Add Position</div>
+    <form method="POST" action="{{ url_for('admin.add_position', election_id=election.id) }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:0.75rem;align-items:end;">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Position Title</label>
+                <input type="text" class="form-control" name="title" placeholder="e.g. SRC President" required>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Description (optional)</label>
+                <input type="text" class="form-control" name="description" placeholder="Role description">
+            </div>
+            <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+    </form>
+</div>
+
+<!-- Positions & Candidates -->
+{% for position in positions %}
+<div class="card" style="border-left:4px solid var(--ub-gold);margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <div class="card-title" style="margin:0;">{{ position.title }}</div>
+        <div style="display:flex;gap:0.4rem;">
+            <a href="{{ url_for('admin.edit_position', position_id=position.id) }}" class="btn btn-sm btn-outline">Edit</a>
+            <form method="POST" action="{{ url_for('admin.delete_position', position_id=position.id) }}" style="margin:0;"
+                  onsubmit="return confirm('Delete position \'{{ position.title }}\' and all its candidates?');">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+    {% if position.description %}
+        <p style="font-size:0.82rem;color:var(--gray-500);margin-bottom:0.75rem;">{{ position.description }}</p>
+    {% endif %}
+
+    <!-- Existing Candidates -->
+    {% if position.candidates %}
+    <div class="table-wrap mb-2">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Student Number</th>
+                    <th>Party / Alliance</th>
+                    <th>Manifesto</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in position.candidates %}
+                <tr>
+                    <td>{{ c.full_name }}</td>
+                    <td>{{ c.student_number }}</td>
+                    <td>{{ c.party or '—' }}</td>
+                    <td style="font-size:0.8rem;color:var(--gray-500);">{{ (c.manifesto or '')[:80] }}{% if c.manifesto and c.manifesto|length > 80 %}…{% endif %}</td>
+                    <td>
+                        <div style="display:flex;gap:0.4rem;">
+                            <a href="{{ url_for('admin.edit_candidate', candidate_id=c.id) }}" class="btn btn-sm btn-outline">Edit</a>
+                            <form method="POST" action="{{ url_for('admin.delete_candidate', candidate_id=c.id) }}" style="margin:0;"
+                                  onsubmit="return confirm('Remove {{ c.full_name }}?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="font-size:0.82rem;color:var(--gray-500);margin-bottom:0.75rem;">No candidates yet.</p>
+    {% endif %}
+
+    <!-- Add Candidate -->
+    <form method="POST" action="{{ url_for('admin.add_candidate', position_id=position.id) }}">
+        <div style="font-size:0.85rem;font-weight:600;color:var(--gray-700);margin-bottom:0.5rem;">Add Candidate</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr auto;gap:0.5rem;align-items:end;">
+            <div>
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" name="full_name" placeholder="Full name" required>
+            </div>
+            <div>
+                <label class="form-label">Student Number</label>
+                <input type="text" class="form-control" name="student_number" placeholder="e.g. 202200001" required>
+            </div>
+            <div>
+                <label class="form-label">Party / Alliance</label>
+                <input type="text" class="form-control" name="party" placeholder="e.g. Student Unity Party">
+            </div>
+            <div>
+                <label class="form-label">Manifesto Summary</label>
+                <input type="text" class="form-control" name="manifesto" placeholder="Brief manifesto">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        </div>
+    </form>
+</div>
+{% else %}
+<div class="alert alert-warning">No positions added yet. Add positions above.</div>
+{% endfor %}
+{% endblock %}

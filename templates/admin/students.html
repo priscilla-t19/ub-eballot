@@ -1,0 +1,70 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Registered Students{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">Registered Students ({{ students|length }})</div>
+    <div class="page-sub">Students who have pre-registered to vote</div>
+</div>
+
+<div class="card">
+    {% if students %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>UB Email</th>
+                    <th>Email Verified</th>
+                    <th>Approved</th>
+                    <th>Voted</th>
+                    <th>Registered</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td>{{ s.student_number }}</td>
+                    <td style="font-size:0.82rem;">{{ s.ub_email }}</td>
+                    <td>
+                        {% if s.is_email_verified %}
+                            <span class="badge badge-success">&#10003;</span>
+                        {% else %}
+                            <span class="badge badge-danger">&#10007;</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if s.is_approved %}
+                            <span class="badge badge-success">&#10003;</span>
+                        {% else %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if s.has_voted %}
+                            <span class="badge badge-info">Voted</span>
+                        {% else %}
+                            <span class="badge badge-gray">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:0.8rem;color:var(--gray-500);">
+                        {{ s.registered_at.strftime('%d %b %Y') }}
+                    </td>
+                    <td>
+                        {% if not s.is_approved %}
+                        <form method="POST" action="{{ url_for('admin.approve_student', student_id=s.id) }}" style="margin:0;">
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No students have registered yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

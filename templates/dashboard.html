@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — UB eBallot{% endblock %}
+
+{% block content %}
+<div class="page-header flex-between flex-wrap gap-1">
+    <div>
+        <div class="page-title">Welcome, {{ student.student_number }}</div>
+        <div class="page-sub">{{ student.ub_email }}</div>
+    </div>
+    <div>
+        {% if student.has_voted %}
+            <span class="badge badge-success">&#10003; Voted</span>
+        {% else %}
+            <span class="badge badge-warning">Not Yet Voted</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Account Status -->
+<div class="card mb-2">
+    <div class="card-title">Account Status</div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <span class="security-badge">Anonymity Protected</span>
+        {% if student.is_email_verified %}
+            <span class="security-badge" style="border-color:var(--success);color:var(--success);">&#10003; Email Verified</span>
+        {% else %}
+            <span class="security-badge" style="border-color:var(--danger);color:var(--danger);">&#10007; Email Not Verified</span>
+        {% endif %}
+        {% if student.is_approved %}
+            <span class="security-badge" style="border-color:var(--success);color:var(--success);">&#10003; Approved Voter</span>
+        {% else %}
+            <span class="security-badge" style="border-color:var(--warning);color:var(--warning);">Pending Approval</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Elections -->
+{% if elections %}
+<div class="page-header mt-2">
+    <div class="page-title" style="font-size:1.1rem;">Available Elections</div>
+</div>
+
+{% for election in elections %}
+<div class="card" style="border-left:4px solid var(--ub-blue);">
+    <div class="flex-between flex-wrap gap-1">
+        <div>
+            <div class="card-title">{{ election.title }}</div>
+            {% if election.description %}
+                <p style="font-size:0.85rem;color:var(--gray-500);margin-top:0.25rem;">{{ election.description }}</p>
+            {% endif %}
+            <div class="card-meta">
+                {{ election.start_time.strftime('%d %b %Y %H:%M') }} –
+                {{ election.end_time.strftime('%d %b %Y %H:%M') }}
+            </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem;">
+            {% if election.is_open %}
+                <span class="election-status status-open"><span class="status-dot"></span> Open Now</span>
+            {% else %}
+                <span class="election-status status-upcoming"><span class="status-dot"></span> Not Open</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+        {% if election.is_open %}
+            {% if student.has_voted %}
+                <span class="badge badge-success">&#10003; You have voted</span>
+                <a href="{{ url_for('verification.verify') }}" class="btn btn-outline btn-sm">Verify My Vote</a>
+            {% elif not student.is_approved or not student.is_email_verified %}
+                <span class="badge badge-warning">Account not ready for voting</span>
+            {% else %}
+                <div class="alert alert-info" style="margin:0;padding:0.6rem 0.9rem;font-size:0.85rem;">
+                    <span>Clicking <strong>Vote Now</strong> will verify your eligibility and issue an anonymous voting pass. Your identity will NOT be linked to your vote.</span>
+                </div>
+                <form method="POST" action="{{ url_for('auth.issue_voting_pass', election_id=election.id) }}" style="margin:0;">
+                    <button type="submit" class="btn btn-primary">Vote Now</button>
+                </form>
+            {% endif %}
+        {% endif %}
+        {% if election.results_published %}
+            <a href="{{ url_for('voting.results', election_id=election.id) }}" class="btn btn-outline btn-sm">View Results</a>
+        {% endif %}
+        <a href="{{ url_for('verification.bulletin_board', election_id=election.id) }}" class="btn btn-outline btn-sm">Public Bulletin</a>
+    </div>
+</div>
+{% endfor %}
+
+{% else %}
+<div class="alert alert-info">
+    <span>No active elections at this time. You will be notified when a new election opens.</span>
+</div>
+{% endif %}
+
+<div class="mt-3 text-center">
+    <a href="{{ url_for('verification.verify') }}" class="btn btn-outline">Verify a Vote Receipt</a>
+</div>
+{% endblock %}

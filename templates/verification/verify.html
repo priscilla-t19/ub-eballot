@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Verify My Vote — UB eBallot{% endblock %}
+
+{% block content %}
+<div class="page-header text-center">
+    <div class="page-title">Verify Your Vote</div>
+    <div class="page-sub">Enter your receipt code to confirm your ballot was counted</div>
+</div>
+
+<div style="max-width:500px;margin:0 auto;">
+    <div class="card">
+        <form method="POST" action="{{ url_for('verification.verify') }}">
+            <div class="form-group">
+                <label class="form-label" for="receipt_code">Receipt Code</label>
+                <input type="text" class="form-control" id="receipt_code" name="receipt_code"
+                       placeholder="Enter your 32-character receipt code"
+                       style="font-family:monospace;letter-spacing:2px;text-transform:uppercase;"
+                       value="{{ request.form.get('receipt_code', '') }}"
+                       required>
+                <div class="form-hint">The receipt code was shown immediately after you voted</div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Verify Vote</button>
+        </form>
+    </div>
+
+    {% if result %}
+        {% if result.found %}
+        <div class="card" style="border-top:4px solid var(--success);margin-top:1rem;">
+            <div style="text-align:center;margin-bottom:1rem;">
+                <div style="margin-bottom:0.75rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--success);">Vote Confirmed</div>
+                <div style="font-size:0.85rem;color:var(--gray-500);margin-top:0.3rem;">
+                    Your ballot is in the official record for <strong>{{ result.election_title }}</strong>
+                </div>
+            </div>
+
+            {% if result.choices %}
+            <div style="background:var(--gray-50);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;">
+                <div style="font-size:0.8rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.75rem;">Your Choices</div>
+                {% for choice in result.choices %}
+                <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-200);">
+                    <span style="color:var(--gray-500);">{{ choice.position }}</span>
+                    <span style="font-weight:600;">{{ choice.candidate }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div style="font-size:0.78rem;color:var(--gray-500);">
+                <div>Cast at: {{ result.cast_at.strftime('%d %b %Y %H:%M:%S UTC') }}</div>
+                <div>Chain hash: <code>{{ result.chain_hash }}</code></div>
+                <div style="margin-top:0.4rem;">
+                    Chain integrity:
+                    {% if result.chain_ok %}
+                        <span class="badge badge-success">&#10003; Intact</span>
+                    {% else %}
+                        <span class="badge badge-danger">Tamper detected</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card" style="border-top:4px solid var(--danger);margin-top:1rem;text-align:center;">
+            <div style="margin-bottom:0.75rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--danger);">Receipt Not Found</div>
+            <p style="font-size:0.875rem;color:var(--gray-500);margin-top:0.5rem;">
+                No ballot was found for code <code>{{ result.receipt_code }}</code>.<br>
+                Please check your code and try again. Ensure there are no extra spaces.
+            </p>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <div class="alert alert-info mt-2">
+        <div style="font-size:0.82rem;">
+            <strong>Privacy note:</strong> Your receipt code is a one-way cryptographic hash. Verifying your vote confirms inclusion but does NOT reveal your voter identity to anyone, including system administrators.
+        </div>
+    </div>
+</div>
+{% endblock %}

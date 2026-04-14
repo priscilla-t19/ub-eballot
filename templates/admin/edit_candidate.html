@@ -1,0 +1,38 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Edit Candidate{% endblock %}
+
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <div class="page-title">Edit Candidate</div>
+        <div class="page-sub">{{ candidate.full_name }}</div>
+    </div>
+    <a href="{{ url_for('admin.manage_election', election_id=candidate.position.election_id) }}" class="btn btn-outline btn-sm">← Back</a>
+</div>
+
+<div class="card" style="max-width:540px;">
+    <form method="POST">
+        <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" name="full_name"
+                   value="{{ candidate.full_name }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Student Number</label>
+            <input type="text" class="form-control" name="student_number"
+                   value="{{ candidate.student_number }}" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Party / Alliance</label>
+            <input type="text" class="form-control" name="party"
+                   value="{{ candidate.party or '' }}" placeholder="e.g. Student Unity Party">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Manifesto Summary</label>
+            <textarea class="form-control" name="manifesto" rows="3"
+                      placeholder="Brief manifesto">{{ candidate.manifesto or '' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+{% endblock %}
