@@ -1,4 +1,5 @@
 """Email utilities for UB eBallot."""
+import threading
 from flask_mail import Message
 from app import mail
 
@@ -6,8 +7,8 @@ from app import mail
 def send_otp_email(to_email: str, otp: str, election_title: str):
     """
     Send a one-time password to the student's UB institutional email.
-    The OTP proves that the person entering the student number has access
-    to the email account registered to that student number.
+    Dispatched in a background thread so the student is not kept waiting
+    on the SMTP handshake before being redirected to the OTP entry page.
     """
     msg = Message(
         subject='UB eBallot — Your Voting Code',
@@ -30,7 +31,6 @@ def send_otp_email(to_email: str, otp: str, election_title: str):
                 </p>
                 <p style="font-size:0.85rem;color:#c00;">
                     If you did not attempt to vote, someone may have your student number.
-        
                 </p>
             </div>
             <p style="font-size:0.75rem;color:#999;text-align:center;margin-top:12px;">
@@ -39,4 +39,15 @@ def send_otp_email(to_email: str, otp: str, election_title: str):
         </div>
         """
     )
-    mail.send(msg)
+
+    # Send in a background thread — student is redirected immediately
+    # while Gmail's SMTP handshake completes in the background.
+    from flask import current_app
+    app = current_app._get_current_object()
+
+    def _send():
+        with app.app_context():
+            mail.send(msg)
+
+    thread = threading.Thread(target=_send, daemon=True)
+    thread.start()

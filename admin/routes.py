@@ -125,64 +125,30 @@ def admin_logout():
 @admin_bp.route('/database-view', methods=['GET'])
 @require_admin_session()
 def database_view():
-    """Secure database viewing without exposing student IDs."""
-    # Election statistics
+    """Database overview showing anonymised voter token hashes."""
     elections = Election.query.all()
     total_elections = len(elections)
     active_elections = len([e for e in elections if e.is_active])
-
-    # Voting statistics (anonymized)
     total_ballots = EncryptedBallot.query.count()
-    published_results = len([e for e in elections if e.results_published])
-
-    # Student registry stats (no IDs exposed)
     total_students = UBStudentRegistry.query.filter_by(is_active=True).count()
     total_voters = VoterToken.query.count()
 
-    # Recent activity (last 24 hours)
-    from datetime import datetime, timedelta, timezone
-    yesterday = datetime.now(timezone.utc) - timedelta(days=1)
-    recent_ballots = EncryptedBallot.query.filter(EncryptedBallot.cast_at >= yesterday).count()
-    recent_logins = AuditLog.query.filter(
-        AuditLog.timestamp >= yesterday,
-        AuditLog.event_type == 'ADMIN_LOGIN_SUCCESS'
-    ).count()
-
-    # Security stats
-    failed_attempts = AuditLog.query.filter_by(event_type='ADMIN_LOGIN_FAILED').count()
-    suspicious_requests = AuditLog.query.filter_by(event_type='SUSPICIOUS_REQUEST').count()
-    recent_audit = AuditLog.query.order_by(AuditLog.timestamp.desc()).limit(8).all()
-    privacy_checks = [
-        {
-            'label': 'Voter identity separation',
-            'status': 'Pass',
-            'detail': 'Votes are tracked with election-specific token hashes rather than raw student IDs.'
-        },
-        {
-            'label': 'Ballot storage',
-            'status': 'Pass',
-            'detail': 'Ballots are encrypted at rest and linked only to receipt hashes and election IDs.'
-        },
-        {
-            'label': 'Admin visibility',
-            'status': 'Protected',
-            'detail': 'This admin view shows counts and audit data without exposing individual student identifiers.'
-        },
-    ]
+    # Voter tokens joined with election title — no student ID exposed
+    voter_tokens = (
+        VoterToken.query
+        .join(Election, VoterToken.election_id == Election.id)
+        .add_columns(Election.title.label('election_title'))
+        .order_by(VoterToken.voted_at.desc())
+        .all()
+    )
 
     return render_template('admin/database_view.html',
-                         total_elections=total_elections,
-                         active_elections=active_elections,
-                         total_ballots=total_ballots,
-                         published_results=published_results,
-                         total_students=total_students,
-                         total_voters=total_voters,
-                         recent_ballots=recent_ballots,
-                         recent_logins=recent_logins,
-                         failed_attempts=failed_attempts,
-                         suspicious_requests=suspicious_requests,
-                         recent_audit=recent_audit,
-                         privacy_checks=privacy_checks)
+                           total_elections=total_elections,
+                           active_elections=active_elections,
+                           total_ballots=total_ballots,
+                           total_students=total_students,
+                           total_voters=total_voters,
+                           voter_tokens=voter_tokens)
 
 
 @admin_bp.route('/change-password', methods=['GET', 'POST'])

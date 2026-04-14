@@ -90,13 +90,15 @@ def identify(election_id):
         db.session.add(otp_record)
         db.session.commit()
 
-        # 5. Send OTP — fall back to flashing it if SMTP is not configured (alpha/demo)
-        email_sent = False
-        try:
+        # 5. Send OTP — dispatched in a background thread; returns immediately.
+        #    Falls back to flashing the code directly if SMTP is not configured.
+        mail_configured = bool(current_app.config.get('MAIL_USERNAME'))
+        if mail_configured:
             send_otp_email(entry.ub_email, raw_otp, election.title)
-            email_sent = True
-        except Exception:
-            # SMTP not configured — show OTP directly so demo still works
+            local, domain = entry.ub_email.split('@', 1)
+            masked = local[0] + '***@' + domain
+            flash(f'A 6-digit code has been sent to {masked}. It expires in 10 minutes.', 'success')
+        else:
             flash(
                 f'[DEMO — email not configured] Your voting code is: {raw_otp}',
                 'info'
@@ -106,12 +108,6 @@ def identify(election_id):
         #    It is deleted the moment OTP is verified.
         session['otp_student_number'] = student_number
         session['otp_election_id'] = election_id
-
-        if email_sent:
-            # Partially mask the email for display (e.g. t***@ub.ac.bw)
-            local, domain = entry.ub_email.split('@', 1)
-            masked = local[0] + '***@' + domain
-            flash(f'A 6-digit code has been sent to {masked}. It expires in 10 minutes.', 'success')
 
         return redirect(url_for('auth.verify_otp', election_id=election_id))
 

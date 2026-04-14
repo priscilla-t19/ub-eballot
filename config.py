@@ -60,6 +60,7 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_TIMEOUT = 10   # seconds — abort SMTP connection if Gmail doesn't respond
     MAIL_DEFAULT_SENDER = (
         'UB eBallot',
         os.environ.get('MAIL_USERNAME', 'noreply@ub.ac.bw')
