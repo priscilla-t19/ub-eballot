@@ -118,20 +118,20 @@ python run.py
 
 ## Mobile Optimization Features
 
-- ✅ Responsive design for all screen sizes
-- ✅ Touch-friendly buttons and forms
-- ✅ Mobile-optimized navigation
-- ✅ Fast loading with minimal assets
-- ✅ Offline-capable service worker
-- ✅ Progressive Web App (PWA) support
+-  Responsive design for all screen sizes
+-  Touch-friendly buttons and forms
+-  Mobile-optimized navigation
+-  Fast loading with minimal assets
+-  Offline-capable service worker
+-  Progressive Web App (PWA) support
 
 ## Security for Mobile
 
-- 🔒 HTTPS enforced in production
-- 🔒 CSRF protection on all forms
-- 🔒 Rate limiting for mobile requests
-- 🔒 Session security with mobile timeouts
-- 🔒 Input validation and sanitization
+-  HTTPS enforced in production
+-  CSRF protection on all forms
+-  Rate limiting for mobile requests
+-  Session security with mobile timeouts
+-  Input validation and sanitization
 
 ## Testing Checklist
 

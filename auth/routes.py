@@ -52,16 +52,14 @@ def identify(election_id):
 
         if not entry:
             flash(
-                'Your student number was not found in the active UB student registry. '
-                
+                'Your student number was not found in the active UB student registry.',
                 'danger'
             )
             return render_template('auth/identify.html', election=election)
 
         if not entry.ub_email:
             flash(
-                'No institutional email is on record for your student number. '
-                
+                'No institutional email is on record for your student number.',
                 'danger'
             )
             return render_template('auth/identify.html', election=election)

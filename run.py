@@ -11,9 +11,9 @@ app = create_app()
 app = configure_mobile_app(app)
 
 if __name__ == '__main__':
-    print("🚀 Starting UB eBallot Server...")
-    print(f"📱 Mobile deployment ready on: http://0.0.0.0:{MOBILE_CONFIG['port']}")
-    print("📋 Run 'flask mobile_guide' for deployment instructions")
+    print(" Starting UB eBallot Server...")
+    print(f" Mobile deployment ready on: http://0.0.0.0:{MOBILE_CONFIG['port']}")
+    print(" Run 'flask mobile_guide' for deployment instructions")
 
     app.run(
         host=MOBILE_CONFIG['host'],

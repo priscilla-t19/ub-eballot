@@ -38,7 +38,6 @@ def is_strong_password(password: str) -> tuple[bool, str]:
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
 @enhanced_rate_limit()
-@csrf_protect()
 def admin_login():
     """Secure admin login with rate limiting and audit logging."""
     # Redirect if already logged in
@@ -99,7 +98,6 @@ def admin_login():
 
     return render_template(
         'admin/login.html',
-        csrf_token=generate_csrf_token(),
         next_page=request.args.get('next', '')
     )
 
