@@ -15,9 +15,19 @@
         </a>
         <div class="nav-links">
             <a href="{{ url_for('admin.dashboard') }}" style="color:rgba(255,255,255,0.85);">Dashboard</a>
-            <a href="{{ url_for('admin.database_view') }}" style="color:rgba(255,255,255,0.85);">Database</a>
-            <a href="{{ url_for('admin.manage_registry') }}" style="color:rgba(255,255,255,0.85);">Registry</a>
-            <a href="{{ url_for('admin.change_password') }}" style="color:rgba(255,255,255,0.85);">Password</a>
+
+            <!-- Manage dropdown -->
+            <div class="admin-dropdown">
+                <button class="admin-dropdown-toggle" onclick="toggleAdminDropdown(event)">
+                    Manage ▾
+                </button>
+                <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                    <a href="{{ url_for('admin.manage_registry') }}">Student Registry</a>
+                    <a href="{{ url_for('admin.database_view') }}">Database View</a>
+                    <a href="{{ url_for('admin.change_password') }}">Change Password</a>
+                </div>
+            </div>
+
             <a href="{{ url_for('main.index') }}" style="color:rgba(255,255,255,0.7);font-size:0.8rem;">← Site</a>
             <a href="{{ url_for('admin.admin_logout') }}" class="btn-outline-sm">Logout</a>
         </div>
@@ -44,6 +54,55 @@
 <footer class="footer">
     <div>UB eBallot Admin Panel, Logged in as <strong>{{ session.get('admin_username', 'Admin') }}</strong></div>
 </footer>
+<style>
+.admin-dropdown { position: relative; display: inline-block; }
+
+.admin-dropdown-toggle {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.85);
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0;
+}
+.admin-dropdown-toggle:hover { color: #fff; }
+
+.admin-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    min-width: 180px;
+    z-index: 1000;
+    overflow: hidden;
+}
+.admin-dropdown-menu a {
+    display: block;
+    padding: 0.75rem 1.1rem;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+.admin-dropdown-menu a:last-child { border-bottom: none; }
+.admin-dropdown-menu a:hover { background: #f5f7fa; color: var(--primary, #003087); }
+.admin-dropdown-menu.open { display: block; }
+</style>
+
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+function toggleAdminDropdown(e) {
+    e.stopPropagation();
+    document.getElementById('adminDropdownMenu').classList.toggle('open');
+}
+document.addEventListener('click', function() {
+    var m = document.getElementById('adminDropdownMenu');
+    if (m) m.classList.remove('open');
+});
+</script>
 </body>
 </html>
