@@ -163,7 +163,7 @@ def verify_otp(election_id):
                 return redirect(url_for('auth.identify', election_id=election_id))
 
             flash(f'Incorrect code. {remaining} attempt(s) remaining.', 'danger')
-            return render_template('auth/verify_otp.html', election=election)
+            return redirect(url_for('auth.verify_otp', election_id=election_id))
 
         # OTP is correct — mark it used immediately
         otp_record.is_used = True
@@ -186,7 +186,26 @@ def verify_otp(election_id):
 
         return redirect(url_for('voting.cast_vote', election_id=election_id))
 
-    return render_template('auth/verify_otp.html', election=election)
+    # Calculate actual seconds remaining from the OTP record
+    otp_record = (OTPCode.query
+                  .filter_by(student_number=student_number,
+                              election_id=election_id,
+                              is_used=False)
+                  .order_by(OTPCode.id.desc())
+                  .first())
+
+    if otp_record:
+        secs = max(0, int((otp_record.expires_at.replace(tzinfo=timezone.utc)
+                           - datetime.now(timezone.utc)).total_seconds()))
+    else:
+        secs = 0
+
+    m, s = divmod(secs, 60)
+    minutes_display = f'{m:02d}:{s:02d}'
+
+    return render_template('auth/verify_otp.html', election=election,
+                           otp_seconds_remaining=secs,
+                           otp_minutes_remaining=minutes_display)
 
 
 def _clear_otp_session():

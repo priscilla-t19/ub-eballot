@@ -48,8 +48,8 @@
             Code expires in
             <span class="countdown-time"
                   id="otp-countdown-time"
-                  data-seconds="{{ config.OTP_EXPIRY|default(600) }}"
-                  data-redirect="{{ url_for('auth.identify', election_id=election.id) }}">10:00</span>
+                  data-seconds="{{ otp_seconds_remaining }}"
+                  data-redirect="{{ url_for('auth.identify', election_id=election.id) }}">{{ otp_minutes_remaining }}</span>
         </div>
 
         <!-- 6 digit boxes -->
@@ -63,7 +63,7 @@
                 <input class="otp-digit" type="text" inputmode="numeric" maxlength="1">
                 <input class="otp-digit" type="text" inputmode="numeric" maxlength="1">
             </div>
-            <!-- Hidden field assembled by JS -->
+            <!-- Hidden field assembled by JS before submit -->
             <input type="hidden" name="otp_code" id="otp_hidden">
 
             <button type="submit" class="btn btn-primary btn-full" id="otpSubmit" disabled>
@@ -83,19 +83,68 @@
 </div>
 
 <script>
-// Enable submit only when all 6 digits filled
-const submitBtn = document.getElementById('otpSubmit');
-const hiddenField = document.getElementById('otp_hidden');
-document.querySelectorAll('.otp-digit').forEach(input => {
-    input.addEventListener('input', () => {
-        const code = Array.from(document.querySelectorAll('.otp-digit')).map(i => i.value).join('');
-        submitBtn.disabled = code.length < 6;
-    });
-});
+(function () {
+    const digits = Array.from(document.querySelectorAll('.otp-digit'));
+    const submitBtn = document.getElementById('otpSubmit');
+    const hiddenField = document.getElementById('otp_hidden');
 
-// Show loading spinner on submit
-document.getElementById('otpForm').addEventListener('submit', function() {
-    if (!submitBtn.disabled) submitBtn.classList.add('btn-loading');
-});
+    function assembleCode() {
+        return digits.map(i => i.value.replace(/\D/g, '')).join('');
+    }
+
+    function updateState() {
+        const code = assembleCode();
+        hiddenField.value = code;          // ← populate hidden field
+        submitBtn.disabled = code.length < 6;
+    }
+
+    digits.forEach((input, idx) => {
+        // Only allow digits
+        input.addEventListener('keypress', e => {
+            if (!/[0-9]/.test(e.key)) e.preventDefault();
+        });
+
+        input.addEventListener('input', () => {
+            // Keep only the last character typed
+            input.value = input.value.replace(/\D/g, '').slice(-1);
+            updateState();
+            // Auto-advance to next box
+            if (input.value && idx < digits.length - 1) {
+                digits[idx + 1].focus();
+            }
+        });
+
+        input.addEventListener('keydown', e => {
+            // Backspace on empty box moves to previous
+            if (e.key === 'Backspace' && !input.value && idx > 0) {
+                digits[idx - 1].focus();
+                digits[idx - 1].value = '';
+                updateState();
+            }
+        });
+
+        // Handle paste of full 6-digit code
+        input.addEventListener('paste', e => {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData)
+                .getData('text').replace(/\D/g, '').slice(0, 6);
+            pasted.split('').forEach((ch, i) => {
+                if (digits[i]) digits[i].value = ch;
+            });
+            updateState();
+            const next = digits[Math.min(pasted.length, digits.length - 1)];
+            if (next) next.focus();
+        });
+    });
+
+    // Ensure hidden field is populated before the form is submitted
+    document.getElementById('otpForm').addEventListener('submit', function () {
+        hiddenField.value = assembleCode();
+        if (!submitBtn.disabled) submitBtn.classList.add('btn-loading');
+    });
+
+    // Focus the first box on load
+    digits[0].focus();
+})();
 </script>
 {% endblock %}

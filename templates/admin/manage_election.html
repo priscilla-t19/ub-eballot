@@ -128,17 +128,39 @@
     <p style="font-size:0.82rem;color:var(--gray-500);margin-bottom:0.75rem;">No candidates yet.</p>
     {% endif %}
 
-    <!-- Add Candidate -->
-    <form method="POST" action="{{ url_for('admin.add_candidate', position_id=position.id) }}">
+    <!-- Add Candidate via registry search -->
+    <form method="POST" action="{{ url_for('admin.add_candidate', position_id=position.id) }}"
+          id="candidateForm-{{ position.id }}">
         <div style="font-size:0.85rem;font-weight:600;color:var(--gray-700);margin-bottom:0.5rem;">Add Candidate</div>
+
+        <!-- Search box -->
+        <div style="position:relative;margin-bottom:0.6rem;">
+            <label class="form-label">Search by name or student number</label>
+            <input type="text"
+                   class="form-control candidate-search"
+                   data-position="{{ position.id }}"
+                   placeholder="Type a name or student number..."
+                   autocomplete="off">
+            <div class="candidate-dropdown" id="drop-{{ position.id }}"
+                 style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;
+                        border:1.5px solid var(--ub-blue);border-radius:var(--radius);
+                        box-shadow:var(--shadow-lg);z-index:200;max-height:220px;overflow-y:auto;">
+            </div>
+        </div>
+
+        <!-- Auto-filled fields -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr auto;gap:0.5rem;align-items:end;">
             <div>
                 <label class="form-label">Full Name</label>
-                <input type="text" class="form-control" name="full_name" placeholder="Full name" required>
+                <input type="text" class="form-control" name="full_name"
+                       id="fn-{{ position.id }}" placeholder="Auto-filled from search" required readonly
+                       style="background:var(--gray-50);">
             </div>
             <div>
                 <label class="form-label">Student Number</label>
-                <input type="text" class="form-control" name="student_number" placeholder="e.g. 202200001" required>
+                <input type="text" class="form-control" name="student_number"
+                       id="sn-{{ position.id }}" placeholder="Auto-filled from search" required readonly
+                       style="background:var(--gray-50);">
             </div>
             <div>
                 <label class="form-label">Party / Alliance</label>
@@ -148,11 +170,65 @@
                 <label class="form-label">Manifesto Summary</label>
                 <input type="text" class="form-control" name="manifesto" placeholder="Brief manifesto">
             </div>
-            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="addBtn-{{ position.id }}" disabled>Add</button>
         </div>
     </form>
 </div>
 {% else %}
 <div class="alert alert-warning">No positions added yet. Add positions above.</div>
 {% endfor %}
+
+<script>
+(function () {
+    const SEARCH_URL = "{{ url_for('admin.registry_search') }}";
+    let debounceTimer;
+
+    document.querySelectorAll('.candidate-search').forEach(input => {
+        const posId  = input.dataset.position;
+        const drop   = document.getElementById('drop-' + posId);
+        const fnEl   = document.getElementById('fn-' + posId);
+        const snEl   = document.getElementById('sn-' + posId);
+        const addBtn = document.getElementById('addBtn-' + posId);
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const q = input.value.trim();
+            if (q.length < 2) { drop.style.display = 'none'; return; }
+
+            debounceTimer = setTimeout(async () => {
+                const res  = await fetch(SEARCH_URL + '?q=' + encodeURIComponent(q));
+                const data = await res.json();
+                drop.innerHTML = '';
+                if (!data.length) {
+                    drop.innerHTML = '<div style="padding:0.75rem 1rem;font-size:0.85rem;color:var(--gray-500);">No students found</div>';
+                    drop.style.display = 'block';
+                    return;
+                }
+                data.forEach(s => {
+                    const item = document.createElement('div');
+                    item.style.cssText = 'padding:0.7rem 1rem;cursor:pointer;font-size:0.875rem;border-bottom:1px solid var(--gray-100);';
+                    item.innerHTML = `<strong>${s.full_name}</strong> <span style="color:var(--gray-500);font-size:0.8rem;">${s.student_number}</span>`;
+                    item.addEventListener('mouseenter', () => item.style.background = 'var(--gray-50)');
+                    item.addEventListener('mouseleave', () => item.style.background = '');
+                    item.addEventListener('click', () => {
+                        fnEl.value  = s.full_name;
+                        snEl.value  = s.student_number;
+                        input.value = s.full_name + ' (' + s.student_number + ')';
+                        drop.style.display = 'none';
+                        addBtn.disabled = false;
+                    });
+                    drop.appendChild(item);
+                });
+                drop.style.display = 'block';
+            }, 250);
+        });
+
+        document.addEventListener('click', e => {
+            if (!input.contains(e.target) && !drop.contains(e.target)) {
+                drop.style.display = 'none';
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}

@@ -420,6 +420,22 @@ def delete_election(election_id):
 @require_admin_session()
 def toggle_election(election_id):
     election = Election.query.get_or_404(election_id)
+
+    if not election.is_active:
+        # Activating — check no other election is already active
+        other_active = Election.query.filter(
+            Election.is_active == True,
+            Election.id != election_id
+        ).first()
+        if other_active:
+            flash(
+                f'Cannot activate "{election.title}" — '
+                f'"{other_active.title}" is already active. '
+                f'Deactivate it first.',
+                'danger'
+            )
+            return redirect(url_for('admin.dashboard'))
+
     election.is_active = not election.is_active
     db.session.commit()
     status = 'activated' if election.is_active else 'deactivated'
@@ -460,6 +476,28 @@ def add_position(election_id):
         db.session.commit()
         flash(f'Position "{title}" added.', 'success')
     return redirect(url_for('admin.manage_election', election_id=election_id))
+
+
+@admin_bp.route('/registry/search')
+@require_admin_session()
+def registry_search():
+    """JSON endpoint — search student registry by name or student number."""
+    from flask import jsonify
+    q = request.args.get('q', '').strip()
+    if len(q) < 2:
+        return jsonify([])
+    pattern = f'%{q}%'
+    students = UBStudentRegistry.query.filter(
+        UBStudentRegistry.is_active == True,
+        db.or_(
+            UBStudentRegistry.full_name.ilike(pattern),
+            UBStudentRegistry.student_number.ilike(pattern)
+        )
+    ).limit(10).all()
+    return jsonify([
+        {'full_name': s.full_name, 'student_number': s.student_number}
+        for s in students
+    ])
 
 
 @admin_bp.route('/positions/<int:position_id>/candidates/add', methods=['POST'])

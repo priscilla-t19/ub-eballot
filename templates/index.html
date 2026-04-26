@@ -146,6 +146,56 @@
     </a>
 </div>
 
+<!-- ── Published Results ───────────────────── -->
+{% if results_data %}
+<div style="margin-bottom:2.5rem;">
+    <div class="page-header">
+        <div class="page-title">Election Results</div>
+        <div class="page-sub">Official results for completed elections</div>
+    </div>
+
+    {% for r in results_data %}
+    <div class="card" style="border-top:4px solid var(--ub-gold);margin-bottom:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+            <div>
+                <div class="card-title">{{ r.election.title }}</div>
+                <div class="card-meta">{{ r.total_votes }} vote{{ 's' if r.total_votes != 1 }} cast</div>
+            </div>
+            <span class="badge badge-info">Results Published</span>
+        </div>
+
+        {% for position in r.positions %}
+        {% set pos_tallies = r.tallies.get(position.id, {}) %}
+        {% set max_votes = pos_tallies.values()|list|max if pos_tallies else 0 %}
+        <div style="margin-bottom:1.25rem;">
+            <div style="font-size:0.85rem;font-weight:700;color:var(--ub-blue);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.6rem;">
+                {{ position.title }}
+            </div>
+            {% for candidate in position.candidates %}
+            {% set votes = pos_tallies.get(candidate.id, 0) %}
+            {% set pct = ((votes / r.total_votes * 100) | round(1)) if r.total_votes > 0 else 0 %}
+            {% set is_leading = votes == max_votes and votes > 0 %}
+            <div class="result-item">
+                <div class="result-label">
+                    <span style="{% if is_leading %}font-weight:800;color:var(--ub-blue);{% endif %}">
+                        {{ candidate.full_name }}
+                        {% if is_leading %} 🏆{% endif %}
+                    </span>
+                    <span>{{ votes }} vote{{ 's' if votes != 1 }} ({{ pct }}%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill {% if is_leading %}leading{% endif %}"
+                         style="width:{{ pct }}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <!-- PWA Install Banner -->
 <div id="pwa-banner">
     <span>Install UB eBallot for quick access on your phone</span>

@@ -1055,3 +1055,159 @@ tr:hover td { background: var(--gray-50); }
 }
 
 #pwa-banner.show { display: flex; }
+
+/* ═══════════════════════════════════════════════
+   3D & INTERACTIVE ENHANCEMENTS
+   Animated gradient · Glassmorphism · Fade-up
+═══════════════════════════════════════════════ */
+
+/* ── 1. Animated gradient on auth pages ── */
+.auth-wrapper {
+  background: linear-gradient(135deg,
+    #001a4d 0%,
+    #003087 30%,
+    #0057b8 60%,
+    #001a4d 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+  min-height: calc(100vh - 120px);
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* Floating orbs behind the card for depth */
+.auth-wrapper::before,
+.auth-wrapper::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.auth-wrapper::before {
+  width: 340px; height: 340px;
+  top: -80px; left: -80px;
+  background: radial-gradient(circle, rgba(255,215,0,0.12) 0%, transparent 70%);
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.auth-wrapper::after {
+  width: 280px; height: 280px;
+  bottom: -60px; right: -60px;
+  background: radial-gradient(circle, rgba(0,87,184,0.3) 0%, transparent 70%);
+  animation: orbFloat 10s ease-in-out infinite reverse;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(20px, 20px) scale(1.05); }
+}
+
+/* Ensure auth card sits above orbs */
+.auth-card { position: relative; z-index: 1; }
+
+/* ── 2. Glassmorphism auth card ─────────── */
+.auth-card {
+  background: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.28),
+    0 1px 0 rgba(255, 255, 255, 0.7) inset;
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .auth-card { background: rgba(255, 255, 255, 0.97); }
+}
+
+/* ── 3. Fade-up entrance animations ─────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.auth-card  { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.hero       { animation: fadeUp 0.5s  cubic-bezier(0.22, 1, 0.36, 1) both; }
+.card       { animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Staggered stat cards */
+.stats-grid .stat-card:nth-child(1) { animation: fadeUp 0.4s 0.05s cubic-bezier(0.22,1,0.36,1) both; }
+.stats-grid .stat-card:nth-child(2) { animation: fadeUp 0.4s 0.12s cubic-bezier(0.22,1,0.36,1) both; }
+.stats-grid .stat-card:nth-child(3) { animation: fadeUp 0.4s 0.19s cubic-bezier(0.22,1,0.36,1) both; }
+.stats-grid .stat-card:nth-child(4) { animation: fadeUp 0.4s 0.26s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* Staggered election cards */
+.election-grid .election-card:nth-child(1) { animation: fadeUp 0.4s 0.05s cubic-bezier(0.22,1,0.36,1) both; }
+.election-grid .election-card:nth-child(2) { animation: fadeUp 0.4s 0.12s cubic-bezier(0.22,1,0.36,1) both; }
+.election-grid .election-card:nth-child(3) { animation: fadeUp 0.4s 0.19s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* ── 4. Card hover lift (3D depth) ──────── */
+.card {
+  transition: transform 0.22s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.22s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 48px rgba(0,48,135,0.15);
+}
+
+.stat-card {
+  transition: transform 0.22s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.22s ease;
+}
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 14px 36px rgba(0,48,135,0.16);
+}
+
+/* ── 5. Button press feel ───────────────── */
+.btn:not(:disabled) {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,48,135,0.22);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* ── 6. OTP digit glow on focus ─────────── */
+.otp-digit:focus {
+  outline: none;
+  border-color: var(--ub-blue);
+  box-shadow: 0 0 0 4px rgba(0,48,135,0.20),
+              0 6px 16px rgba(0,48,135,0.18);
+  transform: scale(1.12);
+  z-index: 1;
+  position: relative;
+}
+
+/* ── 7. Progress bars animate in on load ── */
+@keyframes fillBar {
+  from { width: 0 !important; }
+}
+.progress-fill {
+  animation: fillBar 1.1s 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* ── Disable on touch / reduced-motion ──── */
+@media (hover: none) and (pointer: coarse) {
+  .auth-wrapper::before,
+  .auth-wrapper::after { display: none; }
+  .card:hover, .stat-card:hover { transform: none; box-shadow: var(--shadow); }
+  .btn:hover:not(:disabled) { transform: none; box-shadow: none; }
+  .otp-digit:focus { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -42,12 +42,17 @@ def send_otp_email(to_email: str, otp: str, election_title: str):
 
     # Send in a background thread — student is redirected immediately
     # while Gmail's SMTP handshake completes in the background.
+    import logging
     from flask import current_app
     app = current_app._get_current_object()
 
     def _send():
         with app.app_context():
-            mail.send(msg)
+            try:
+                mail.send(msg)
+                logging.getLogger(__name__).info(f'OTP email sent to {to_email}')
+            except Exception as e:
+                logging.getLogger(__name__).error(f'OTP email FAILED to {to_email}: {e}')
 
     thread = threading.Thread(target=_send, daemon=True)
     thread.start()
