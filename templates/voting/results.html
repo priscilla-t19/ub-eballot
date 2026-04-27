@@ -52,13 +52,26 @@
 </div>
 {% endfor %}
 
-<div style="text-align:center;margin-top:1.5rem;">
-    <a href="{{ url_for('verification.bulletin_board', election_id=election.id) }}" class="btn btn-outline">
-        View Public Ballot Bulletin
-    </a>
-    &nbsp;
-    <a href="{{ url_for('verification.verify') }}" class="btn btn-outline">
-        Verify My Vote
-    </a>
+<div style="text-align:center;margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;">
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline">← Go Back</a>
+    {% if election.is_active %}
+    <span style="font-size:0.8rem;color:var(--gray-500);" id="refresh-label">
+        Live — refreshing in <strong id="refresh-countdown">30</strong>s
+    </span>
+    {% endif %}
 </div>
+
+{% if election.is_active %}
+<script>
+(function () {
+    let secs = 30;
+    const label = document.getElementById('refresh-countdown');
+    setInterval(() => {
+        secs--;
+        if (label) label.textContent = secs;
+        if (secs <= 0) window.location.reload();
+    }, 1000);
+})();
+</script>
+{% endif %}
 {% endblock %}

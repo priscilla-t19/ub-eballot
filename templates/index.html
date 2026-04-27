@@ -105,7 +105,7 @@
                 {% if election.is_open %}
                 <div class="election-timer">
                     <span class="election-timer-dot"></span>
-                    Closes in <span class="election-countdown" data-end="{{ election.end_time.strftime('%Y-%m-%dT%H:%M:%S') }}">&nbsp;</span>
+                    Closes in <span class="election-countdown" data-end="{{ election.end_time.strftime('%Y-%m-%dT%H:%M:%S') }}Z">&nbsp;</span>
                 </div>
                 {% endif %}
 
@@ -115,11 +115,9 @@
                             Vote Now →
                         </a>
                     {% endif %}
-                    {% if election.results_published %}
-                        <a href="{{ url_for('voting.results', election_id=election.id) }}" class="btn btn-outline btn-sm">
-                            View Results
-                        </a>
-                    {% endif %}
+                    <a href="{{ url_for('voting.results', election_id=election.id) }}" class="btn btn-outline btn-sm">
+                        View Results
+                    </a>
                 </div>
             </div>
             {% endfor %}
@@ -161,7 +159,11 @@
                 <div class="card-title">{{ r.election.title }}</div>
                 <div class="card-meta">{{ r.total_votes }} vote{{ 's' if r.total_votes != 1 }} cast</div>
             </div>
-            <span class="badge badge-info">Results Published</span>
+            {% if r.election.is_active %}
+            <span class="badge badge-success">Live</span>
+            {% else %}
+            <span class="badge badge-info">Final</span>
+            {% endif %}
         </div>
 
         {% for position in r.positions %}

@@ -145,11 +145,6 @@ def vote_receipt():
 @voting_bp.route('/results/<int:election_id>')
 def results(election_id):
     election = Election.query.get_or_404(election_id)
-
-    if not election.results_published and not election.is_open:
-        flash('Results are not yet published.', 'info')
-        return redirect(url_for('main.index'))
-
     positions = Position.query.filter_by(election_id=election_id).all()
     tallies = {}
 

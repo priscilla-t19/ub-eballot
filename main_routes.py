@@ -10,8 +10,8 @@ main_bp = Blueprint('main', __name__)
 def index():
     elections = Election.query.filter_by(is_active=True).order_by(Election.start_time.desc()).all()
 
-    # Build tallies for every election with published results
-    published = Election.query.filter_by(results_published=True).order_by(Election.end_time.desc()).all()
+    # Build tallies for all elections
+    published = Election.query.order_by(Election.end_time.desc()).all()
     results_data = []
     for election in published:
         positions = Position.query.filter_by(election_id=election.id).all()

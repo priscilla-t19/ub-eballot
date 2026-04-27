@@ -276,9 +276,10 @@ document.querySelectorAll('.election-countdown').forEach(el => {
 
   function updateTimer() {
     const diff = endTime - Date.now();
+    const timer = el.closest('.election-timer');
     if (diff <= 0) {
-      el.textContent = 'Closing…';
-      el.closest('.election-timer')?.classList.add('urgent');
+      el.textContent = 'Closed';
+      if (timer) timer.classList.add('urgent');
       return;
     }
     const h = Math.floor(diff / 3600000);
@@ -286,13 +287,13 @@ document.querySelectorAll('.election-countdown').forEach(el => {
     const s = Math.floor((diff % 60000) / 1000);
 
     if (h > 0) {
-      el.textContent = `${h}h ${m}m remaining`;
+      el.textContent = `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s remaining`;
     } else if (m > 0) {
-      el.textContent = `${m}m ${s}s remaining`;
-      if (m < 10) el.closest('.election-timer')?.classList.add('urgent');
+      el.textContent = `${m}m ${String(s).padStart(2,'0')}s remaining`;
+      if (m < 10 && timer) timer.classList.add('urgent');
     } else {
       el.textContent = `${s}s remaining`;
-      el.closest('.election-timer')?.classList.add('urgent');
+      if (timer) timer.classList.add('urgent');
     }
     setTimeout(updateTimer, 1000);
   }
@@ -345,12 +346,37 @@ const copyBtn = document.getElementById('copyReceiptBtn');
 if (copyBtn) {
   copyBtn.addEventListener('click', () => {
     const code = document.getElementById('receiptCode')?.textContent?.trim();
-    if (code) {
-      navigator.clipboard.writeText(code).then(() => {
-        copyBtn.textContent = '✓ Copied!';
-        copyBtn.style.background = '#1a7a4a';
-        setTimeout(() => { copyBtn.textContent = 'Copy Code'; copyBtn.style.background = ''; }, 2500);
-      });
+    if (!code) return;
+
+    function onCopied() {
+      copyBtn.textContent = '✓ Copied!';
+      copyBtn.style.background = 'var(--success)';
+      copyBtn.style.color = '#fff';
+      copyBtn.style.borderColor = 'var(--success)';
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy Code';
+        copyBtn.style.background = '';
+        copyBtn.style.color = '';
+        copyBtn.style.borderColor = '';
+      }, 2500);
+    }
+
+    // Modern clipboard API (HTTPS / localhost)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(onCopied).catch(() => fallbackCopy(code));
+    } else {
+      fallbackCopy(code);
+    }
+
+    function fallbackCopy(text) {
+      // Works on http:// (local network) where clipboard API is blocked
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { document.execCommand('copy'); onCopied(); } catch (e) { /* silent */ }
+      document.body.removeChild(ta);
     }
   });
 }

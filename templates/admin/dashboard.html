@@ -47,9 +47,6 @@
             {% else %}
                 <span class="badge badge-gray">Inactive</span>
             {% endif %}
-            {% if election.results_published %}
-                <span class="badge badge-info">Results Published</span>
-            {% endif %}
         </div>
     </div>
     <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
@@ -59,12 +56,6 @@
                 {% if election.is_active %}Deactivate{% else %}Activate{% endif %}
             </button>
         </form>
-        {% if not election.results_published %}
-        <form method="POST" action="{{ url_for('admin.publish_results', election_id=election.id) }}" style="margin:0;">
-            <button type="submit" class="btn btn-gold btn-sm">Publish Results</button>
-        </form>
-        {% endif %}
-        <a href="{{ url_for('voting.results', election_id=election.id) }}" class="btn btn-outline btn-sm">View Results</a>
     </div>
 </div>
 {% endfor %}

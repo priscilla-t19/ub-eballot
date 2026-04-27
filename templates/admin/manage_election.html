@@ -35,16 +35,6 @@
                     {% if election.is_active %}Deactivate{% else %}Activate{% endif %}
                 </button>
             </form>
-            {% if not election.results_published %}
-            <form method="POST" action="{{ url_for('admin.publish_results', election_id=election.id) }}" style="margin:0;">
-                <button type="submit" class="btn btn-gold btn-sm">Publish Results</button>
-            </form>
-            {% else %}
-            <form method="POST" action="{{ url_for('admin.unpublish_results', election_id=election.id) }}" style="margin:0;"
-                  onsubmit="return confirm('Unpublish results? Students will no longer be able to view them.');">
-                <button type="submit" class="btn btn-sm btn-outline" style="border-color:var(--warning);color:var(--warning);">Unpublish Results</button>
-            </form>
-            {% endif %}
             {% if not election.is_active %}
             <form method="POST" action="{{ url_for('admin.delete_election', election_id=election.id) }}" style="margin:0;"
                   onsubmit="return confirm('Permanently delete this election and all its ballots?');">
@@ -149,7 +139,7 @@
         </div>
 
         <!-- Auto-filled fields -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr auto;gap:0.5rem;align-items:end;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.5rem;align-items:end;">
             <div>
                 <label class="form-label">Full Name</label>
                 <input type="text" class="form-control" name="full_name"
@@ -165,10 +155,6 @@
             <div>
                 <label class="form-label">Party / Alliance</label>
                 <input type="text" class="form-control" name="party" placeholder="e.g. Student Unity Party">
-            </div>
-            <div>
-                <label class="form-label">Manifesto Summary</label>
-                <input type="text" class="form-control" name="manifesto" placeholder="Brief manifesto">
             </div>
             <button type="submit" class="btn btn-primary btn-sm" id="addBtn-{{ position.id }}" disabled>Add</button>
         </div>
